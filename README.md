@@ -1,1 +1,297 @@
-# Portfolio11
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ANTON KOSOLAPOV | AI ARCHITECT</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700&family=Plus+Jakarta+Sans:wght@300;600&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #050505;
+            --accent: #F7E7CE; 
+            --gold: #D4AF37;
+            --glass: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(247, 231, 206, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; min-height: 100vh; }
+
+        #pioneer-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: 80px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 40px; z-index: 100; backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo { font-family: 'Unbounded'; font-weight: 700; font-size: 0.8rem; letter-spacing: 3px; color: var(--accent); }
+        .logo span { color: var(--gold); }
+
+        main { position: relative; z-index: 2; padding-top: 130px; }
+        section { display: flex; flex-direction: column; align-items: center; padding: 40px 20px; text-align: center; }
+
+        .badge {
+            color: var(--gold); font-family: 'Unbounded'; font-size: 9px; letter-spacing: 4px; margin-bottom: 24px;
+            text-transform: uppercase; padding: 10px 20px; border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 100px; background: rgba(212, 175, 55, 0.03); backdrop-filter: blur(5px);
+        }
+
+        .hero-title {
+            font-family: 'Unbounded', sans-serif; font-size: clamp(2.2rem, 8vw, 5.5rem);
+            line-height: 0.95; margin-bottom: 20px; text-transform: uppercase; color: var(--accent); font-weight: 700;
+        }
+
+        .hero-title span {
+            display: block; background: linear-gradient(to right, var(--gold), #fff, var(--gold));
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: shine 8s linear infinite;
+        }
+
+        @keyframes shine { to { background-position: 200% center; } }
+
+        .personal-name { font-family: 'Unbounded'; font-size: 0.9rem; color: var(--accent); margin-bottom: 15px; letter-spacing: 6px; opacity: 0.8; text-transform: uppercase; }
+        .slogan { font-family: 'Plus Jakarta Sans'; font-size: 1rem; font-weight: 300; color: #888; max-width: 600px; margin-bottom: 80px; line-height: 1.6; }
+
+        .projects-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px; width: 100%; max-width: 1200px; margin-bottom: 100px;
+        }
+
+        .video-slot {
+            width: 100%; aspect-ratio: 16/10; background: var(--glass); border-radius: 35px;
+            position: relative; overflow: hidden; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px); transition: all 0.5s ease;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+
+        .video-slot:hover { transform: translateY(-10px); border-color: rgba(212, 175, 55, 0.4); }
+
+        video { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease; z-index: 2; pointer-events: none; }
+        video.playing { opacity: 1; }
+
+        .slot-ui { z-index: 10; text-align: center; pointer-events: none; }
+        .slot-icon {
+            width: 60px; height: 60px; border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;
+            background: rgba(212, 175, 55, 0.05); transition: 0.3s;
+        }
+
+        .video-slot:hover .slot-icon { background: var(--gold); transform: rotate(90deg); }
+        .slot-icon svg { width: 22px; fill: var(--gold); }
+        .video-slot:hover .slot-icon svg { fill: #000; }
+        .slot-text { font-family: 'Unbounded'; font-size: 10px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+
+        .contact-card { background: var(--glass); padding: 50px 30px; border-radius: 45px; border: 1px solid var(--glass-border); backdrop-filter: blur(30px); width: 100%; max-width: 650px; }
+        .phone-link { font-family: 'Unbounded'; font-size: clamp(1.2rem, 5vw, 2.2rem); color: #fff; text-decoration: none; display: block; margin-bottom: 25px; font-weight: 700; transition: 0.4s; }
+        .phone-link:hover { color: var(--gold); }
+
+        .upload-input { display: none; }
+
+        .scan-bar {
+            position: absolute; width: 100%; height: 50%;
+            background: linear-gradient(to bottom, transparent, rgba(212, 175, 55, 0.15), transparent);
+            top: -100%; z-index: 20; pointer-events: none;
+        }
+
+        @keyframes scan-animation { 0% { top: -100%; } 100% { top: 100%; } }
+
+        #cloud-status {
+            position: fixed; bottom: 20px; left: 20px; z-index: 200;
+            font-family: 'Unbounded'; font-size: 7px; color: var(--gold);
+            letter-spacing: 2px; background: rgba(0,0,0,0.8); padding: 8px 16px;
+            border-radius: 50px; border: 1px solid var(--glass-border);
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; height: 70px; }
+            main { padding-top: 100px; }
+            .projects-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cloud-status">SYSTEM: INITIALIZING</div>
+    <canvas id="pioneer-bg"></canvas>
+
+    <nav>
+        <div class="logo">ANTON KOSOLAPOV <span>|</span> AI ARCHITECT</div>
+        <a href="tel:+380636352571" style="color: var(--gold); font-family: 'Unbounded'; font-size: 7px; text-decoration: none; border: 1px solid var(--gold); padding: 8px 16px; border-radius: 50px;">CALL</a>
+    </nav>
+
+    <main>
+        <section>
+            <div class="badge">Next-Gen Design</div>
+            <h1 class="hero-title">ARCHITECTING<span>INTELLIGENCE</span></h1>
+            <div class="personal-name">ANTON KOSOLAPOV</div>
+            <p class="slogan">Высокотехнологичная визуализация и цифровые пространства.</p>
+
+            <div class="projects-grid">
+                <div class="video-slot" onclick="triggerUpload('in1')">
+                    <div class="scan-bar" id="scan-in1"></div>
+                    <div class="slot-ui" id="ui-in1">
+                        <div class="slot-icon"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
+                        <div class="slot-text">ДОБАВИТЬ ПРОЕКТ I</div>
+                    </div>
+                    <input type="file" id="in1" class="upload-input" accept="video/*" onchange="handleCloudUpload(this, '1')">
+                    <video loop muted playsinline></video>
+                </div>
+
+                <div class="video-slot" onclick="triggerUpload('in2')">
+                    <div class="scan-bar" id="scan-in2"></div>
+                    <div class="slot-ui" id="ui-in2">
+                        <div class="slot-icon"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
+                        <div class="slot-text">ДОБАВИТЬ ПРОЕКТ II</div>
+                    </div>
+                    <input type="file" id="in2" class="upload-input" accept="video/*" onchange="handleCloudUpload(this, '2')">
+                    <video loop muted playsinline></video>
+                </div>
+                
+                <div class="video-slot" onclick="triggerUpload('in3')">
+                    <div class="scan-bar" id="scan-in3"></div>
+                    <div class="slot-ui" id="ui-in3">
+                        <div class="slot-icon"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
+                        <div class="slot-text">ДОБАВИТЬ ПРОЕКТ III</div>
+                    </div>
+                    <input type="file" id="in3" class="upload-input" accept="video/*" onchange="handleCloudUpload(this, '3')">
+                    <video loop muted playsinline></video>
+                </div>
+            </div>
+
+            <div class="contact-card">
+                <div class="badge" style="margin-bottom: 10px;">Связь</div>
+                <a href="tel:+380636352571" class="phone-link">+380 63 635 25 71</a>
+                <p style="font-size: 10px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase;">КИЕВ • ВЕСЬ МИР</p>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDocs, collection, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'anton-arch-github-prod';
+        
+        const CHUNK_SIZE = 500000; 
+        const statusEl = document.getElementById('cloud-status');
+
+        signInAnonymously(auth).catch(() => {});
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                statusEl.innerText = "CLOUD: READY";
+                syncAllSlots();
+            }
+        });
+
+        async function syncAllSlots() {
+            for (let i = 1; i <= 3; i++) {
+                try {
+                    const q = query(collection(db, 'artifacts', appId, 'public', 'data', `slot_${i}`));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) {
+                        let chunks = [];
+                        snap.forEach(d => chunks.push({ id: d.id, val: d.data().p }));
+                        chunks.sort((a,b) => parseInt(a.id) - parseInt(b.id));
+                        renderSlot(i, chunks.map(c => c.val).join(''));
+                    }
+                } catch (e) {}
+            }
+            statusEl.innerText = "CLOUD: SYNCED";
+        }
+
+        function renderSlot(slotId, data) {
+            const input = document.getElementById(`in${slotId}`);
+            if (!input) return;
+            const container = input.parentElement;
+            const video = container.querySelector('video');
+            const ui = document.getElementById(`ui-in${slotId}`);
+            video.src = data;
+            video.onloadeddata = () => {
+                video.play().catch(() => {});
+                video.classList.add('playing');
+                ui.style.opacity = '0';
+                setTimeout(() => ui.style.display = 'none', 400);
+            };
+        }
+
+        window.triggerUpload = (id) => document.getElementById(id).click();
+
+        window.handleCloudUpload = async (input, slotId) => {
+            const file = input.files[0];
+            if (!file) return;
+
+            const scan = document.getElementById(`scan-in${slotId}`);
+            const ui = document.getElementById(`ui-in${slotId}`);
+            const text = ui.querySelector('.slot-text');
+
+            scan.style.animation = 'scan-animation 1.5s linear infinite';
+            text.innerText = "UPLOADING...";
+            statusEl.innerText = "CLOUD: SYNCING...";
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64 = e.target.result;
+                const chunks = [];
+                for (let i = 0; i < base64.length; i += CHUNK_SIZE) chunks.push(base64.substring(i, i + CHUNK_SIZE));
+
+                const collRef = collection(db, 'artifacts', appId, 'public', 'data', `slot_${slotId}`);
+                const oldDocs = await getDocs(collRef);
+                for (const d of oldDocs.docs) await deleteDoc(d.ref);
+
+                for (let j = 0; j < chunks.length; j++) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', `slot_${slotId}`, j.toString().padStart(5, '0')), { p: chunks[j] });
+                }
+
+                renderSlot(slotId, base64);
+                scan.style.animation = 'none';
+                statusEl.innerText = "CLOUD: SAVED";
+            };
+            reader.readAsDataURL(file);
+        };
+
+        const canvas = document.getElementById('pioneer-bg');
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.position.z = 5;
+
+        const points = new THREE.Points(
+            new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(Array.from({length:1500}, () => (Math.random()-0.5)*10)), 3)),
+            new THREE.PointsMaterial({ color: 0xD4AF37, size: 0.012, transparent: true, opacity: 0.3 })
+        );
+        scene.add(points);
+
+        function animate() {
+            points.rotation.y += 0.0006;
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        animate();
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
+
+```
