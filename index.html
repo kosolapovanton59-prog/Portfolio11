@@ -35,7 +35,7 @@
             border-bottom: 1px solid var(--glass-border);
         }
 
-        .logo { font-family: 'Unbounded'; font-weight: 700; font-size: 0.8rem; letter-spacing: 3px; color: var(--accent); }
+        .logo { font-family: 'Unbounded'; font-weight: 700; font-size: 0.8rem; letter-spacing: 3px; color: var(--accent); cursor: pointer; }
         .logo span { color: var(--gold); }
 
         main { position: relative; z-index: 2; padding-top: 130px; }
@@ -60,9 +60,6 @@
 
         @keyframes shine { to { background-position: 200% center; } }
 
-        .personal-name { font-family: 'Unbounded'; font-size: 0.9rem; color: var(--accent); margin-bottom: 15px; letter-spacing: 6px; opacity: 0.8; text-transform: uppercase; }
-        .slogan { font-family: 'Plus Jakarta Sans'; font-size: 1rem; font-weight: 300; color: #888; max-width: 600px; margin-bottom: 80px; line-height: 1.6; }
-
         .projects-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 30px; width: 100%; max-width: 1200px; margin-bottom: 100px;
@@ -72,35 +69,28 @@
             width: 100%; aspect-ratio: 16/10; background: var(--glass); border-radius: 35px;
             position: relative; overflow: hidden; border: 1px solid var(--glass-border);
             backdrop-filter: blur(20px); transition: all 0.5s ease;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .video-slot:hover { transform: translateY(-10px); border-color: rgba(212, 175, 55, 0.4); }
 
         video { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease; z-index: 2; pointer-events: none; }
         video.playing { opacity: 1; }
 
-        .slot-ui { z-index: 10; text-align: center; pointer-events: none; }
-        .slot-icon {
-            width: 60px; height: 60px; border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 50%;
-            display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;
-            background: rgba(212, 175, 55, 0.05); transition: 0.3s;
+        /* Админ-кнопка (скрыта по умолчанию) */
+        .admin-btn {
+            position: absolute; z-index: 50; top: 20px; right: 20px;
+            background: var(--gold); color: #000; border: none; padding: 10px 20px;
+            border-radius: 50px; font-family: 'Unbounded'; font-size: 10px;
+            cursor: pointer; display: none; font-weight: 700; box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
         }
 
-        .video-slot:hover .slot-icon { background: var(--gold); transform: rotate(90deg); }
-        .slot-icon svg { width: 22px; fill: var(--gold); }
-        .video-slot:hover .slot-icon svg { fill: #000; }
-        .slot-text { font-family: 'Unbounded'; font-size: 10px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
-
-        .contact-card { background: var(--glass); padding: 50px 30px; border-radius: 45px; border: 1px solid var(--glass-border); backdrop-filter: blur(30px); width: 100%; max-width: 650px; }
-        .phone-link { font-family: 'Unbounded'; font-size: clamp(1.2rem, 5vw, 2.2rem); color: #fff; text-decoration: none; display: block; margin-bottom: 25px; font-weight: 700; transition: 0.4s; }
-        .phone-link:hover { color: var(--gold); }
+        .slot-ui { z-index: 10; text-align: center; pointer-events: none; }
+        .slot-text { font-family: 'Unbounded'; font-size: 10px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; opacity: 0.5; }
 
         .upload-input { display: none; }
 
         .scan-bar {
             position: absolute; width: 100%; height: 50%;
-            background: linear-gradient(to bottom, transparent, rgba(212, 175, 55, 0.15), transparent);
+            background: linear-gradient(to bottom, transparent, rgba(212, 175, 55, 0.2), transparent);
             top: -100%; z-index: 20; pointer-events: none;
         }
 
@@ -113,101 +103,124 @@
             border-radius: 50px; border: 1px solid var(--glass-border);
         }
 
-        @media (max-width: 768px) {
-            nav { padding: 0 20px; height: 70px; }
-            main { padding-top: 100px; }
-            .projects-grid { grid-template-columns: 1fr; }
+        /* Модалка логина */
+        #admin-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000;
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(20px);
+        }
+        .modal-content {
+            background: #111; padding: 40px; border-radius: 30px; border: 1px solid var(--gold);
+            text-align: center; width: 90%; max-width: 400px;
+        }
+        .modal-content input {
+            background: #000; border: 1px solid var(--glass-border); color: #fff;
+            padding: 15px; width: 100%; border-radius: 15px; margin: 20px 0; outline: none;
+            text-align: center; font-family: 'Unbounded';
         }
     </style>
 </head>
 <body>
 
-    <div id="cloud-status">SYSTEM: INITIALIZING</div>
+    <div id="cloud-status">SYSTEM: READY</div>
     <canvas id="pioneer-bg"></canvas>
 
+    <div id="admin-modal">
+        <div class="modal-content">
+            <div class="logo">ADMIN ACCESS</div>
+            <input type="password" id="admin-pass" placeholder="PASSWORD">
+            <button onclick="checkAdmin()" style="background: var(--gold); border:none; padding:12px 30px; border-radius:50px; font-family:'Unbounded'; font-size:10px; cursor:pointer;">LOGIN</button>
+        </div>
+    </div>
+
     <nav>
-        <div class="logo">ANTON KOSOLAPOV <span>|</span> AI ARCHITECT</div>
+        <div class="logo" onclick="handleLogoClick()">ANTON KOSOLAPOV <span>|</span> AI ARCHITECT</div>
         <a href="tel:+380636352571" style="color: var(--gold); font-family: 'Unbounded'; font-size: 7px; text-decoration: none; border: 1px solid var(--gold); padding: 8px 16px; border-radius: 50px;">CALL</a>
     </nav>
 
     <main>
         <section>
-            <div class="badge">Next-Gen Architecture</div>
+            <div class="badge">Portfolio Admin Control</div>
             <h1 class="hero-title">ARCHITECTING<span>INTELLIGENCE</span></h1>
-            <div class="personal-name">ANTON KOSOLAPOV</div>
-            <p class="slogan">Premium AI-driven visualization & digital environments.</p>
 
             <div class="projects-grid">
-                <div class="video-slot" onclick="triggerUpload('in1')">
+                <!-- Слот 1 -->
+                <div class="video-slot" id="slot-container-1">
+                    <button class="admin-btn" onclick="triggerUpload('in1')">UPLOAD VIDEO</button>
                     <div class="scan-bar" id="scan-in1"></div>
                     <div class="slot-ui" id="ui-in1">
-                        <div class="slot-icon"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
-                        <div class="slot-text">ADD PROJECT I</div>
+                        <div class="slot-text">PROJECT I EMPTY</div>
                     </div>
                     <input type="file" id="in1" class="upload-input" accept="video/*" onchange="handleCloudUpload(this, '1')">
                     <video loop muted playsinline></video>
                 </div>
 
-                <div class="video-slot" onclick="triggerUpload('in2')">
+                <!-- Слот 2 -->
+                <div class="video-slot" id="slot-container-2">
+                    <button class="admin-btn" onclick="triggerUpload('in2')">UPLOAD VIDEO</button>
                     <div class="scan-bar" id="scan-in2"></div>
                     <div class="slot-ui" id="ui-in2">
-                        <div class="slot-icon"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
-                        <div class="slot-text">ADD PROJECT II</div>
+                        <div class="slot-text">PROJECT II EMPTY</div>
                     </div>
                     <input type="file" id="in2" class="upload-input" accept="video/*" onchange="handleCloudUpload(this, '2')">
                     <video loop muted playsinline></video>
                 </div>
                 
-                <div class="video-slot" onclick="triggerUpload('in3')">
+                <!-- Слот 3 -->
+                <div class="video-slot" id="slot-container-3">
+                    <button class="admin-btn" onclick="triggerUpload('in3')">UPLOAD VIDEO</button>
                     <div class="scan-bar" id="scan-in3"></div>
                     <div class="slot-ui" id="ui-in3">
-                        <div class="slot-icon"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
-                        <div class="slot-text">ADD PROJECT III</div>
+                        <div class="slot-text">PROJECT III EMPTY</div>
                     </div>
                     <input type="file" id="in3" class="upload-input" accept="video/*" onchange="handleCloudUpload(this, '3')">
                     <video loop muted playsinline></video>
                 </div>
-            </div>
-
-            <div class="contact-card">
-                <div class="badge" style="margin-bottom: 10px;">Contact</div>
-                <a href="tel:+380636352571" class="phone-link">+380 63 635 25 71</a>
-                <p style="font-size: 10px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase;">KYIV • WORLDWIDE</p>
             </div>
         </section>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDocs, collection, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kosolapov-github-v1';
+        const appId = 'anton-kosolapov-official'; 
         
         const CHUNK_SIZE = 500000; 
         const statusEl = document.getElementById('cloud-status');
 
-        const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
+        // Логика входа в админку (5 кликов по логотипу)
+        let clickCount = 0;
+        window.handleLogoClick = () => {
+            clickCount++;
+            if (clickCount >= 5) {
+                document.getElementById('admin-modal').style.display = 'flex';
+                clickCount = 0;
             }
         };
-        initAuth();
+
+        window.checkAdmin = () => {
+            const pass = document.getElementById('admin-pass').value;
+            if (pass === '1111') { // Твой пароль
+                document.getElementById('admin-modal').style.display = 'none';
+                document.querySelectorAll('.admin-btn').forEach(btn => btn.style.display = 'block');
+                statusEl.innerText = "MODE: ADMINISTRATOR";
+            } else {
+                alert("WRONG PASSWORD");
+            }
+        };
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                statusEl.innerText = "CLOUD: READY";
-                syncAllSlots();
-            }
+            if (!user) signInAnonymously(auth);
+            else syncAllSlots();
         });
 
         async function syncAllSlots() {
+            statusEl.innerText = "CLOUD: SYNCING...";
             for (let i = 1; i <= 3; i++) {
                 try {
                     const q = query(collection(db, 'artifacts', appId, 'public', 'data', `slot_${i}`));
@@ -220,21 +233,17 @@
                     }
                 } catch (e) {}
             }
-            statusEl.innerText = "CLOUD: SYNCED";
+            statusEl.innerText = "CLOUD: ALL SYNCED";
         }
 
         function renderSlot(slotId, data) {
-            const input = document.getElementById(`in${slotId}`);
-            if (!input) return;
-            const container = input.parentElement;
-            const video = container.querySelector('video');
+            const video = document.querySelector(`#slot-container-${slotId} video`);
             const ui = document.getElementById(`ui-in${slotId}`);
             video.src = data;
             video.onloadeddata = () => {
-                video.play().catch(() => {});
+                video.play();
                 video.classList.add('playing');
-                ui.style.opacity = '0';
-                setTimeout(() => ui.style.display = 'none', 400);
+                ui.style.display = 'none';
             };
         }
 
@@ -245,12 +254,8 @@
             if (!file) return;
 
             const scan = document.getElementById(`scan-in${slotId}`);
-            const ui = document.getElementById(`ui-in${slotId}`);
-            const text = ui.querySelector('.slot-text');
-
-            scan.style.animation = 'scan-animation 1.5s linear infinite';
-            text.innerText = "SAVING...";
-            statusEl.innerText = "CLOUD: SYNCING...";
+            statusEl.innerText = "CLOUD: UPLOADING VIDEO...";
+            scan.style.animation = 'scan-animation 2s linear infinite';
 
             const reader = new FileReader();
             reader.onload = async (e) => {
@@ -268,11 +273,12 @@
 
                 renderSlot(slotId, base64);
                 scan.style.animation = 'none';
-                statusEl.innerText = "CLOUD: SAVED";
+                statusEl.innerText = "CLOUD: SAVED SUCCESSFULLY";
             };
             reader.readAsDataURL(file);
         };
 
+        // Фон THREE.JS
         const canvas = document.getElementById('pioneer-bg');
         const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
         const scene = new THREE.Scene();
@@ -287,7 +293,7 @@
         scene.add(points);
 
         function animate() {
-            points.rotation.y += 0.0006;
+            points.rotation.y += 0.0004;
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
