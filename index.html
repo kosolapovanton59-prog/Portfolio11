@@ -8,10 +8,6 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700&family=Plus+Jakarta+Sans:wght@300;600&display=swap" rel="stylesheet">
-    
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
@@ -23,7 +19,7 @@
             --glass-border: rgba(247, 231, 206, 0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg); color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; min-height: 100vh; }
 
         #pioneer-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
@@ -35,7 +31,7 @@
             border-bottom: 1px solid var(--glass-border);
         }
 
-        .logo { font-family: 'Unbounded'; font-weight: 700; font-size: 0.8rem; letter-spacing: 3px; color: var(--accent); cursor: pointer; }
+        .logo { font-family: 'Unbounded'; font-weight: 700; font-size: 0.8rem; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; }
         .logo span { color: var(--gold); }
 
         main { position: relative; z-index: 2; padding-top: 130px; }
@@ -72,213 +68,64 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        video { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease; z-index: 2; pointer-events: none; }
-        video.playing { opacity: 1; }
+        .video-slot:hover { transform: translateY(-10px); border-color: rgba(212, 175, 55, 0.4); }
 
-        /* Админ-кнопка (скрыта по умолчанию) */
-        .admin-btn {
-            position: absolute; z-index: 50; top: 20px; right: 20px;
-            background: var(--gold); color: #000; border: none; padding: 10px 20px;
-            border-radius: 50px; font-family: 'Unbounded'; font-size: 10px;
-            cursor: pointer; display: none; font-weight: 700; box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+        video { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            z-index: 2; 
+            background: #000; /* Фон пока видео грузится */
         }
 
-        .slot-ui { z-index: 10; text-align: center; pointer-events: none; }
-        .slot-text { font-family: 'Unbounded'; font-size: 10px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; opacity: 0.5; }
+        .contact-card { background: var(--glass); padding: 50px 30px; border-radius: 45px; border: 1px solid var(--glass-border); backdrop-filter: blur(30px); width: 100%; max-width: 650px; }
+        .phone-link { font-family: 'Unbounded'; font-size: clamp(1.2rem, 5vw, 2.2rem); color: #fff; text-decoration: none; display: block; margin-bottom: 15px; font-weight: 700; transition: 0.4s; }
+        .phone-link:hover { color: var(--gold); }
 
-        .upload-input { display: none; }
-
-        .scan-bar {
-            position: absolute; width: 100%; height: 50%;
-            background: linear-gradient(to bottom, transparent, rgba(212, 175, 55, 0.2), transparent);
-            top: -100%; z-index: 20; pointer-events: none;
-        }
-
-        @keyframes scan-animation { 0% { top: -100%; } 100% { top: 100%; } }
-
-        #cloud-status {
-            position: fixed; bottom: 20px; left: 20px; z-index: 200;
-            font-family: 'Unbounded'; font-size: 7px; color: var(--gold);
-            letter-spacing: 2px; background: rgba(0,0,0,0.8); padding: 8px 16px;
-            border-radius: 50px; border: 1px solid var(--glass-border);
-        }
-
-        /* Модалка логина */
-        #admin-modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000;
-            display: none; align-items: center; justify-content: center; backdrop-filter: blur(20px);
-        }
-        .modal-content {
-            background: #111; padding: 40px; border-radius: 30px; border: 1px solid var(--gold);
-            text-align: center; width: 90%; max-width: 400px;
-        }
-        .modal-content input {
-            background: #000; border: 1px solid var(--glass-border); color: #fff;
-            padding: 15px; width: 100%; border-radius: 15px; margin: 20px 0; outline: none;
-            text-align: center; font-family: 'Unbounded';
-        }
+        .footer-tag { font-family: 'Unbounded'; font-size: 8px; color: var(--gold); letter-spacing: 3px; opacity: 0.6; }
     </style>
 </head>
 <body>
 
-    <div id="cloud-status">SYSTEM: READY</div>
     <canvas id="pioneer-bg"></canvas>
 
-    <div id="admin-modal">
-        <div class="modal-content">
-            <div class="logo">ADMIN ACCESS</div>
-            <input type="password" id="admin-pass" placeholder="PASSWORD">
-            <button onclick="checkAdmin()" style="background: var(--gold); border:none; padding:12px 30px; border-radius:50px; font-family:'Unbounded'; font-size:10px; cursor:pointer;">LOGIN</button>
-        </div>
-    </div>
-
     <nav>
-        <div class="logo" onclick="handleLogoClick()">ANTON KOSOLAPOV <span>|</span> AI ARCHITECT</div>
+        <div class="logo">ANTON KOSOLAPOV <span>|</span> AI ARCHITECT</div>
         <a href="tel:+380636352571" style="color: var(--gold); font-family: 'Unbounded'; font-size: 7px; text-decoration: none; border: 1px solid var(--gold); padding: 8px 16px; border-radius: 50px;">CALL</a>
     </nav>
 
     <main>
         <section>
-            <div class="badge">Portfolio Admin Control</div>
+            <div class="badge">Live Portfolio</div>
             <h1 class="hero-title">ARCHITECTING<span>INTELLIGENCE</span></h1>
 
             <div class="projects-grid">
-                <!-- Слот 1 -->
-                <div class="video-slot" id="slot-container-1">
-                    <button class="admin-btn" onclick="triggerUpload('in1')">UPLOAD VIDEO</button>
-                    <div class="scan-bar" id="scan-in1"></div>
-                    <div class="slot-ui" id="ui-in1">
-                        <div class="slot-text">PROJECT I EMPTY</div>
-                    </div>
-                    <input type="file" id="in1" class="upload-input" accept="video/*" onchange="handleCloudUpload(this, '1')">
-                    <video loop muted playsinline></video>
+                <!-- Слот 1: подтягивает файл 1.mp4 из корня репозитория -->
+                <div class="video-slot">
+                    <video loop muted playsinline autoplay src="1.mp4"></video>
                 </div>
 
-                <!-- Слот 2 -->
-                <div class="video-slot" id="slot-container-2">
-                    <button class="admin-btn" onclick="triggerUpload('in2')">UPLOAD VIDEO</button>
-                    <div class="scan-bar" id="scan-in2"></div>
-                    <div class="slot-ui" id="ui-in2">
-                        <div class="slot-text">PROJECT II EMPTY</div>
-                    </div>
-                    <input type="file" id="in2" class="upload-input" accept="video/*" onchange="handleCloudUpload(this, '2')">
-                    <video loop muted playsinline></video>
+                <!-- Слот 2: измени название файла, когда загрузишь второе видео -->
+                <div class="video-slot">
+                    <video loop muted playsinline autoplay src="video2.mp4"></video>
                 </div>
                 
-                <!-- Слот 3 -->
-                <div class="video-slot" id="slot-container-3">
-                    <button class="admin-btn" onclick="triggerUpload('in3')">UPLOAD VIDEO</button>
-                    <div class="scan-bar" id="scan-in3"></div>
-                    <div class="slot-ui" id="ui-in3">
-                        <div class="slot-text">PROJECT III EMPTY</div>
-                    </div>
-                    <input type="file" id="in3" class="upload-input" accept="video/*" onchange="handleCloudUpload(this, '3')">
-                    <video loop muted playsinline></video>
+                <!-- Слот 3: измени название файла, когда загрузишь третье видео -->
+                <div class="video-slot">
+                    <video loop muted playsinline autoplay src="video3.mp4"></video>
                 </div>
+            </div>
+
+            <div class="contact-card">
+                <a href="tel:+380636352571" class="phone-link">+380 63 635 25 71</a>
+                <div class="footer-tag">KYIV • WORLDWIDE</div>
             </div>
         </section>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDocs, collection, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = 'anton-kosolapov-official'; 
-        
-        const CHUNK_SIZE = 500000; 
-        const statusEl = document.getElementById('cloud-status');
-
-        // Логика входа в админку (5 кликов по логотипу)
-        let clickCount = 0;
-        window.handleLogoClick = () => {
-            clickCount++;
-            if (clickCount >= 5) {
-                document.getElementById('admin-modal').style.display = 'flex';
-                clickCount = 0;
-            }
-        };
-
-        window.checkAdmin = () => {
-            const pass = document.getElementById('admin-pass').value;
-            if (pass === '1111') { // Твой пароль
-                document.getElementById('admin-modal').style.display = 'none';
-                document.querySelectorAll('.admin-btn').forEach(btn => btn.style.display = 'block');
-                statusEl.innerText = "MODE: ADMINISTRATOR";
-            } else {
-                alert("WRONG PASSWORD");
-            }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            if (!user) signInAnonymously(auth);
-            else syncAllSlots();
-        });
-
-        async function syncAllSlots() {
-            statusEl.innerText = "CLOUD: SYNCING...";
-            for (let i = 1; i <= 3; i++) {
-                try {
-                    const q = query(collection(db, 'artifacts', appId, 'public', 'data', `slot_${i}`));
-                    const snap = await getDocs(q);
-                    if (!snap.empty) {
-                        let chunks = [];
-                        snap.forEach(d => chunks.push({ id: d.id, val: d.data().p }));
-                        chunks.sort((a,b) => parseInt(a.id) - parseInt(b.id));
-                        renderSlot(i, chunks.map(c => c.val).join(''));
-                    }
-                } catch (e) {}
-            }
-            statusEl.innerText = "CLOUD: ALL SYNCED";
-        }
-
-        function renderSlot(slotId, data) {
-            const video = document.querySelector(`#slot-container-${slotId} video`);
-            const ui = document.getElementById(`ui-in${slotId}`);
-            video.src = data;
-            video.onloadeddata = () => {
-                video.play();
-                video.classList.add('playing');
-                ui.style.display = 'none';
-            };
-        }
-
-        window.triggerUpload = (id) => document.getElementById(id).click();
-
-        window.handleCloudUpload = async (input, slotId) => {
-            const file = input.files[0];
-            if (!file) return;
-
-            const scan = document.getElementById(`scan-in${slotId}`);
-            statusEl.innerText = "CLOUD: UPLOADING VIDEO...";
-            scan.style.animation = 'scan-animation 2s linear infinite';
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64 = e.target.result;
-                const chunks = [];
-                for (let i = 0; i < base64.length; i += CHUNK_SIZE) chunks.push(base64.substring(i, i + CHUNK_SIZE));
-
-                const collRef = collection(db, 'artifacts', appId, 'public', 'data', `slot_${slotId}`);
-                const oldDocs = await getDocs(collRef);
-                for (const d of oldDocs.docs) await deleteDoc(d.ref);
-
-                for (let j = 0; j < chunks.length; j++) {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', `slot_${slotId}`, j.toString().padStart(5, '0')), { p: chunks[j] });
-                }
-
-                renderSlot(slotId, base64);
-                scan.style.animation = 'none';
-                statusEl.innerText = "CLOUD: SAVED SUCCESSFULLY";
-            };
-            reader.readAsDataURL(file);
-        };
-
-        // Фон THREE.JS
+    <script>
+        // Анимированные частицы на фоне
         const canvas = document.getElementById('pioneer-bg');
         const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
         const scene = new THREE.Scene();
@@ -287,17 +134,18 @@
         camera.position.z = 5;
 
         const points = new THREE.Points(
-            new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(Array.from({length:1500}, () => (Math.random()-0.5)*10)), 3)),
-            new THREE.PointsMaterial({ color: 0xD4AF37, size: 0.012, transparent: true, opacity: 0.2 })
+            new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(Array.from({length:2000}, () => (Math.random()-0.5)*10)), 3)),
+            new THREE.PointsMaterial({ color: 0xD4AF37, size: 0.015, transparent: true, opacity: 0.25 })
         );
         scene.add(points);
 
         function animate() {
-            points.rotation.y += 0.0004;
+            points.rotation.y += 0.0006;
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
         animate();
+
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
